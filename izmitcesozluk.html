@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>İzmitçe Sözlük</title>
+  <style>
+    :root{
+      --green:#0B6B3A; /* Kocaelispor vibe */
+      --text:#111;
+      --muted:#666;
+      --bg:#fff;
+      --card:#fff;
+      --border:#e6e6e6;
+      --shadow: 0 10px 30px rgba(0,0,0,.08);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .topbar{
+      background:var(--green);
+      height:88px;
+      width:100%;
+    }
+    .wrap{
+      max-width:900px;
+      margin: -44px auto 56px;
+      padding: 0 16px;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:22px;
+    }
+    h1{
+      margin:0 0 6px;
+      font-size:22px;
+      letter-spacing:.2px;
+    }
+    .sub{
+      margin:0 0 18px;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.35;
+    }
+    .controls{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin: 14px 0 16px;
+    }
+    button{
+      appearance:none;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:600;
+      transition: transform .06s ease, box-shadow .12s ease, border-color .12s ease;
+    }
+    button:hover{border-color:#cfcfcf}
+    button:active{transform: translateY(1px)}
+    .primary{
+      border-color: transparent;
+      background: var(--green);
+      color:#fff;
+    }
+    .primary:hover{filter:brightness(1.03)}
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      color:var(--text);
+      background:#fff;
+      font-size:13px;
+    }
+    .row{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    .result{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:16px;
+      background:#fff;
+    }
+    .term{
+      font-size:22px;
+      font-weight:800;
+      margin:0 0 6px;
+    }
+    .meaning{
+      margin:0;
+      font-size:15px;
+      line-height:1.45;
+      color:var(--text);
+    }
+    .meta{
+      margin-top:10px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .list{
+      margin-top:14px;
+      border-top:1px dashed var(--border);
+      padding-top:14px;
+      display:none;
+    }
+    .list.show{display:block}
+    .list h2{
+      margin:0 0 10px;
+      font-size:16px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:8px;
+    }
+    @media (min-width: 700px){
+      .row{grid-template-columns: 1.3fr .7fr}
+      .grid{grid-template-columns: 1fr 1fr}
+    }
+    .item{
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:12px;
+      background:#fff;
+    }
+    .item b{display:block;margin-bottom:4px}
+    .small{
+      color:var(--muted);
+      font-size:12px;
+      margin:0;
+      line-height:1.35;
+    }
+    .footer{
+      margin-top:14px;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12px;
+      border:1px solid var(--border);
+      border-bottom-width:2px;
+      padding:2px 6px;
+      border-radius:8px;
+      background:#fff;
+      color:var(--text);
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar"></div>
+
+  <div class="wrap">
+    <div class="card">
+      <h1>İzmitçe Sözlük 💚🖤 </h1>
+      <p class="sub">
+        Butona bas da gör şeklimizi b'olum. İstersen tüm sözlüğü de yandan açabilirsin.
+      </p>
+
+      <div class="controls">
+        <button class="primary" id="btnRandom">Rastgele getir</button>
+        <button id="btnCopy" title="Kelime + anlamı kopyala">Kopyala</button>
+        <button id="btnToggleList">Tüm listeyi göster</button>
+        <span class="pill" id="countPill">0 kayıt</span>
+        <span class="pill">Kısayol: <span class="kbd">R</span> = rastgele</span>
+      </div>
+
+      <div class="row">
+        <div class="result" aria-live="polite">
+          <p class="term" id="term">Hazır mısın?</p>
+          <p class="meaning" id="meaning">“Rastgele getir”e basınca kelime gelecek.</p>
+          <div class="meta">
+            <span id="letterTag">Harf: —</span>
+            <span id="indexTag">#—</span>
+          </div>
+        </div>
+
+        <div class="result">
+          <p class="term" style="font-size:16px;margin-bottom:10px;">Mini ayarlar</p>
+          <p class="small" style="margin-bottom:10px;">
+            Aynı kelime gelirse Tekrarı Azalt tuşuna bas.
+          </p>
+          <div class="controls" style="margin:0;">
+            <button id="btnNoRepeat">Tekrarı azalt</button>
+            <button id="btnShuffle">Listeyi karıştır</button>
+          </div>
+          <p class="footer">
+            Not: Öneri varsa @ulaskeskinol93 insta adresine bildiriniz.
+          </p>
+        </div>
+      </div>
+
+      <div class="list" id="listWrap">
+        <h2>Tüm liste (A’dan Z’ye)</h2>
+        <div class="grid" id="grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // A’dan Z’ye sözlük
+    const dictionary = [
+      // A
+      { letter:"A", term:"Atar yapmak", meaning:"Sert çıkışmak, kavga çıkarmak." },
+      { letter:"A", term:"Aso", meaning:"Delikanlı, yakışıklı, güzel, hoş kişi/olay." },
+      { letter:"A", term:"Aksavata yapmak", meaning:"Tartışma sırasında orta yolu bulacak konuşma yapmak." },
+      { letter:"A", term:"As yapmak", meaning:"Susmak; bazen “akıllı ol” minvalinde argo kullanım." },
+      { letter:"A", term:"Afaroz etmek", meaning:"Birine dayak atmak, hırpalamak." },
+      { letter:"A", term:"Amçolu", meaning:"“Amcamın oğlu” demek; samimi hitap." },
+      { letter:"A", term:"Alo yapmak", meaning:"Aramak (telefonla)." },
+      { letter:"A", term:"Ayaaaa", meaning:"Gibi demek. Örn: çocuklara sordum naaabıyonuz ayaa?" },
+      { letter:"A", term:"Avel", meaning:"Şaşkın, saf, aptal anlamında." },
+      { letter:"A", term:"Arkası Sarı Sekiz", meaning:"Sohbete koyulan son nokta." },
+
+      // B
+      { letter:"B", term:"Bilader", meaning:"Birader; dostça hitap." },
+      { letter:"B", term:"Babakelli", meaning:"Büyük, iri (genelde kişi için)." },
+      { letter:"B", term:"Boğmak", meaning:"Yemek yemek (Örn. “kayıntı boğmak”)." },
+      { letter:"B", term:"Biliyon da beni", meaning:"Beni az çok tanıyorsun." },
+      { letter:"B", term:"Bolum", meaning:"Be oğlum'un İzmitçe hali; samimi hitap." },
+      { letter:"B", term:"Babisi", meaning:"Be abisi'nin İzmitçe hali; samimi hitap." },
+
+      // C / Ç
+      { letter:"C", term:"Ceket", meaning:"Manita / sevgili." },
+      { letter:"C", term:"Ceket giymek", meaning:"Manitayla gezmek / Manita yapmak." },
+      { letter:"Ç", term:"Çekelemek", meaning:"İçmek / tüketmek." },
+      { letter:"Ç", term:"Çökmek", meaning:"El koymak. Örn: Çakmağına çöktüm." },
+
+      // D
+      { letter:"D", term:"Deprem görmemiş", meaning:"Genç, yaşı küçük" },
+
+      // E
+      { letter:"E", term:"Enayi", meaning:"Saf kişi." },
+      { letter:"E", term:"Erketeye yatmak", meaning:"Gizli takibe almak, gözetlemek." },
+      { letter:"E", term:"Eh seni be", meaning:"Sevgi sözcüğü, helal olsun şekli" },
+
+      // F
+      { letter:"F", term:"Faça", meaning:"Giysi." },
+      { letter:"F", term:"Façasını salmak", meaning:"Başkasına giysi vermek ama geri almamak (emanet gidip dönmemesi)." },
+      { letter:"F", term:"Faça yapmak", meaning:"Kıyafet satın almak." },
+      { letter:"F", term:"Façan yansın", meaning:"Güzel görünen şeye iltifat/nazar değmesin tadında söz." },
+      { letter:"F", term:"Façadan kesmek", meaning:"Birini giyim kuşamından tanımak." },
+      { letter:"F", term:"Faça salmak", meaning:"Giysiyi ödünç vermek." },
+      { letter:"F", term:"Façalaşmak", meaning:"Bir yerde karşılaşmak." },
+
+      // G
+      { letter:"G", term:"Gevşek", meaning:"Rahat, umursamaz tavır." },
+      { letter:"G", term:"Geçerli", meaning:"Onaylamak." },
+
+      // H
+      { letter:"H", term:"Hiç kesemiyosun bu işleri", meaning:"Olaya uyanamadığını belirtmek." },
+      { letter:"H", term:"Hap etmek", meaning:"Birini etkisiz hâle getirmek / dövmek." },
+      { letter:"H", term:"Hade bee", meaning:"Büyük şaşkınlık ünlemi." },
+      { letter:"H", term:"Hade laan", meaning:"“Hadi ya / sallıyorsun / katılmıyorum” gibi." },
+      { letter:"H", term:"Hesaaabı", meaning:"Benzer bir şeyi betimlerken kullanılır. Uzatılarak da kullanılabilir. Örn: Bu çocuk da abisinin hesaaabı takılıyor. " },
+      { letter:"H", term:"Hayırdır b'olum", meaning:"Anahtar gibi kalıp. Hesap da sorar, Sorun da çözer. " },
+
+      // İ
+      { letter:"İ", term:"İş koymak", meaning:"Haberdar etmek." },
+      { letter:"İ", term:"İş atmak", meaning:"Yürümek. (adım olan değil flörtöz yürümek)." },
+      { letter:"İ", term:"İsmet", meaning:"Kız." },
+      { letter:"İ", term:"İsmeti kesmek", meaning:"Kız kesmek Örn: İissmeti keeeeeeees)." },
+
+      // K
+      { letter:"K", term:"Karşiim", meaning:"Kardeşim; samimi hitap." },
+      { letter:"K", term:"Kayıntı boğmak/atmak", meaning:"Yemek yemek." },
+      { letter:"K", term:"Kesmek", meaning:"Bakmak / tanımak / bilmek (bağlama göre)." },
+      { letter:"K", term:"Kesiyorum seni", meaning:"“Seni daha önce görmüş gibiyim.”" },
+      { letter:"K", term:"Kesiyon da beni", meaning:"“Beni tanıyor gibisin / beni kesiyorsun galiba.” (bakış/tavırdan tanıdığını ima eder)" },
+      { letter:"K", term:"Kendini kurmak", meaning:"Bir şeye saplanıp kalmak; takıntı yapmak." },
+      { letter:"K", term:"Ketenpere", meaning:"Dolandırıcılık." },
+      { letter:"K", term:"Ketenpereye gelmek", meaning:"Dolandırılmak." },
+      { letter:"K", term:"Kene", meaning:"Para." },
+      { letter:"K", term:"Kelav", meaning:"Yollu kadın." },
+      { letter:"K", term:"Köşede tükür", meaning:"Uygun yerde durmak / inmek." },
+
+      // L
+      { letter:"L", term:"Lala", meaning:"Donup kalan, saf kişi." },
+      { letter:"L", term:"Lav", meaning:"Boşa gitmek, yok olmak." },
+      { letter:"L", term:"Lavzek", meaning:"Salak, saf olmayan kişi (argo)." },
+      { letter:"L", term:"Lübünya", meaning:"Gay anlamında kullanılan sözcük." },
+
+      // M
+      { letter:"M", term:"Matiz", meaning:"Sarhoş olmak." },
+      { letter:"M", term:"Manita kesmek", meaning:"Karşı cinse bakmak / flört etmek." },
+      { letter:"M", term:"Mazın", meaning:"Zengin." },
+      { letter:"M", term:"Mantarlamak", meaning:"Başaramamak, ezilmek." },
+      { letter:"M", term:"Mevzu koparmak", meaning:"Olay çıkarmak." },
+      { letter:"M", term:"Metazori", meaning:"Zorlama eylem." },
+      { letter:"M", term:"Mariz", meaning:"Dayak, kötek." },
+      { letter:"M", term:"Marizine kaymak", meaning:"Dayak atmak." },
+      { letter:"M", term:"Mekana çökmek", meaning:"Bir mekâna baskın yapmak / yerleşmek." },
+      { letter:"M", term:"Moruk", meaning:"En klasik hitap şekli." },
+
+      // N
+      { letter:"N", term:"Nallamak", meaning:"Birini dolandırmak." },
+
+      // O / Ö
+      { letter:"O", term:"On numara", meaning:"Çok iyi / mükemmel." },
+      { letter:"Ö", term:"Öksürmek", meaning:"Bir şey istemek (genelde para). Örn: Moruk 50 lira öksürsene kayıntı boğacam." },
+      { letter:"Ö", term:"Ötede bayıl.", meaning:"Patavatsız olma durumu." },
+
+      // P
+      { letter:"P", term:"Paspal", meaning:"Kötü, hoşuna gitmeyen." },
+      { letter:"P", term:"Pike yapmak", meaning:"Israrcı olmak." },
+      { letter:"P", term:"Pilaçka olmak", meaning:"Peşini bırakmamak." },
+      { letter:"P", term:"Pres yapmak", meaning:"Baskı kurmak, ikna etmeye çalışmak." },
+      { letter:"P", term:"Patates olmak", meaning:"Bir işi becerememek; yüzüne gözüne bulaştırmak." },
+      { letter:"P", term:"Patlıcan olmak", meaning:"Utanmak; kıpkırmızı olmak." },
+      { letter:"P", term:"Paçoz", meaning:"Zayıf, çelimsiz kişi." },
+      { letter:"P", term:"Pandiz etmek", meaning:"Birini zor durumda bırakmak." },
+      { letter:"P", term:"Piiz", meaning:"İçki içmek." },
+      { letter:"P", term:"Pişar kesmek", meaning:"İşemek." },
+      { letter:"P", term:"Pişarhane", meaning:"Tuvalet." },
+      { letter:"P", term:"Pırasayı almak", meaning:"Göt olmak." },
+      { letter:"P", term:"Paslaşmak", meaning:"Haberleşmek." },
+
+      // R
+      { letter:"R", term:"Raad ol", meaning:"“Kasma, ben hallederim.”" },
+
+      // S
+      { letter:"S", term:"Salmak", meaning:"Birçok anlamı olan çok amaçlı sözcük..." },
+      { letter:"S", term:"Sal bolum beni", meaning:"“Beni rahat bırak.”" },
+      { letter:"S", term:"Sal bu işleri", meaning:"Yanlış işlerden vazgeç; uyarı." },
+      { letter:"S", term:"Sal kendini", meaning:"“Sakin ol / rahat ol.”" },
+      { letter:"S", term:"Salça olmak", meaning:"Gereksiz yere birine takılmak, bulaşmak, laf atmak." },
+      { letter:"S", term:"Salık", meaning:"Rahat, umursamaz kişi." },
+      { letter:"S", term:"Sinyal olmak/yapmak/atmak", meaning:"İhtiyacı olan bir şeyi istemek." },
+      { letter:"S", term:"Sektirmemek", meaning:"Kaçırmamak." },
+      { letter:"S", term:"Şekli", meaning:"Hesabı ile aynı anlam." },
+
+      // T
+      { letter:"T", term:"Tiiz", meaning:"Kibar tabiriyle popo" },
+      { letter:"T", term:"Terso", meaning:"Sakat, kötü, fakir." },
+
+      // Ü
+      { letter:"Ü", term:"Üstüne çökmek", meaning:"Birini hırpalamak." },
+
+      // Y
+      { letter:"Y", term:"Yılan var kaarşim", meaning:"Civarda çok güzel / etkileyici kız var." },
+
+      // Z
+      { letter:"Z", term:"Zarbo", meaning:"Polis, resmi görevli." },
+      { letter:"Z", term:"Zehir", meaning:"Tehlikeli / çok iyi (bağlama göre sıfat)." },
+    ];
+
+    // --- App state
+    let lastIndex = -1;
+    let reduceRepeats = false;
+
+    const $term = document.getElementById("term");
+    const $meaning = document.getElementById("meaning");
+    const $letterTag = document.getElementById("letterTag");
+    const $indexTag = document.getElementById("indexTag");
+    const $countPill = document.getElementById("countPill");
+    const $grid = document.getElementById("grid");
+    const $listWrap = document.getElementById("listWrap");
+
+    function renderCount(){
+      $countPill.textContent = `${dictionary.length} kayıt`;
+    }
+
+    function pickRandomIndex(){
+      if(dictionary.length === 0) return -1;
+      if(!reduceRepeats) return Math.floor(Math.random() * dictionary.length);
+
+      // tekrar azalt: son geleni mümkünse tekrar verme (küçük liste ise kaçamaz)
+      if(dictionary.length === 1) return 0;
+      let idx = Math.floor(Math.random() * dictionary.length);
+      let guard = 0;
+      while(idx === lastIndex && guard < 20){
+        idx = Math.floor(Math.random() * dictionary.length);
+        guard++;
+      }
+      return idx;
+    }
+
+    function showEntry(idx){
+      if(idx < 0) return;
+      const e = dictionary[idx];
+      $term.textContent = e.term;
+      $meaning.textContent = e.meaning;
+      $letterTag.textContent = `Harf: ${e.letter}`;
+      $indexTag.textContent = `#${idx + 1}`;
+      lastIndex = idx;
+    }
+
+    function shuffleArray(arr){
+      for(let i = arr.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+
+    function buildList(){
+      $grid.innerHTML = "";
+      // alfabetik görünüm için kopya sıralama
+      const sorted = [...dictionary].sort((a,b) => {
+        const la = a.letter.localeCompare(b.letter, "tr");
+        if(la !== 0) return la;
+        return a.term.localeCompare(b.term, "tr");
+      });
+
+      for(const e of sorted){
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `<b>${e.letter} — ${escapeHtml(e.term)}</b><p class="small">${escapeHtml(e.meaning)}</p>`;
+        $grid.appendChild(div);
+      }
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    async function copyCurrent(){
+      const t = $term.textContent;
+      const m = $meaning.textContent;
+      const text = `${t} — ${m}`;
+      try{
+        await navigator.clipboard.writeText(text);
+        toast("Kopyalandı ✅");
+      }catch{
+        // fallback
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        toast("Kopyalandı ✅");
+      }
+    }
+
+    // mini toast
+    let toastTimer = null;
+    function toast(msg){
+      let el = document.getElementById("toast");
+      if(!el){
+        el = document.createElement("div");
+        el.id = "toast";
+        el.style.position = "fixed";
+        el.style.left = "50%";
+        el.style.bottom = "22px";
+        el.style.transform = "translateX(-50%)";
+        el.style.background = "#fff";
+        el.style.border = "1px solid var(--border)";
+        el.style.boxShadow = "var(--shadow)";
+        el.style.borderRadius = "999px";
+        el.style.padding = "10px 14px";
+        el.style.color = "var(--text)";
+        el.style.fontWeight = "700";
+        el.style.zIndex = "9999";
+        document.body.appendChild(el);
+      }
+      el.textContent = msg;
+      el.style.opacity = "1";
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { el.style.opacity = "0"; }, 1200);
+    }
+
+    // events
+    document.getElementById("btnRandom").addEventListener("click", () => {
+      const idx = pickRandomIndex();
+      showEntry(idx);
+    });
+
+    document.getElementById("btnCopy").addEventListener("click", copyCurrent);
+
+    document.getElementById("btnToggleList").addEventListener("click", (ev) => {
+      const show = !$listWrap.classList.contains("show");
+      $listWrap.classList.toggle("show", show);
+      ev.target.textContent = show ? "Tüm listeyi gizle" : "Tüm listeyi göster";
+      if(show) buildList();
+    });
+
+    document.getElementById("btnNoRepeat").addEventListener("click", (ev) => {
+      reduceRepeats = !reduceRepeats;
+      ev.target.textContent = reduceRepeats ? "Tekrar az: Açık" : "Tekrarı azalt";
+      toast(reduceRepeats ? "Tekrar azaltma açık" : "Tekrar azaltma kapalı");
+    });
+
+    document.getElementById("btnShuffle").addEventListener("click", () => {
+      shuffleArray(dictionary);
+      toast("Liste karıştırıldı 🔀");
+      if($listWrap.classList.contains("show")) buildList();
+    });
+
+    // keyboard shortcut: R
+    window.addEventListener("keydown", (e) => {
+      if(e.key.toLowerCase() === "r"){
+        const idx = pickRandomIndex();
+        showEntry(idx);
+      }
+    });
+
+    // init
+    renderCount();
+    showEntry(Math.floor(Math.random() * dictionary.length));
+  </script>
+</body>
+</html>
